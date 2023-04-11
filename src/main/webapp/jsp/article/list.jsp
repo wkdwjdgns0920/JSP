@@ -7,9 +7,9 @@ List<Map<String, Object>> articleRows = (List<Map<String, Object>>) request.getA
 int cPage = (int) request.getAttribute("page");
 int totalPage = (int) request.getAttribute("totalPage");
 
-int itemsInAPage = 10;
-int startPage = ((cPage-1) / itemsInAPage) * itemsInAPage + 1;
-int endPage = startPage + itemsInAPage - 1;
+int listPage = 10;
+int startPage = ((cPage-1) / listPage) * listPage + 1;
+int endPage = startPage + listPage - 1;
 %>
 <!DOCTYPE html>
 <html>
@@ -69,7 +69,7 @@ int endPage = startPage + itemsInAPage - 1;
 			endPage = totalPage;%>
 	<%}%>
 	<%if(startPage > 1) {%>
-		<button><a href="list?page=<%=startPage-itemsInAPage%>">&lt;&lt;</a></button>
+		<button><a href="list?page=<%=startPage-listPage%>">◀◀;</a></button>
 	<%}%>
 		<%
 		for (int i = startPage; i <= endPage; i++) {
@@ -79,7 +79,7 @@ int endPage = startPage + itemsInAPage - 1;
 		}
 		%>
 		<% if (endPage < totalPage) { %>
-        <a href="list?page=<%=startPage+itemsInAPage%>">&gt;&gt;</a>
+        <a href="list?page=<%=startPage+listPage%>">▶▶;</a>
     <% } %>
 	</div>
 

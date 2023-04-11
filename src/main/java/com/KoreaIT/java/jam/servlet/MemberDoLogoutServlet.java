@@ -9,28 +9,26 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-@WebServlet("/home/main")
-public class HomeMainServlet extends HttpServlet {
-
+@WebServlet("/member/doLogout")
+public class MemberDoLogoutServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		
-		HttpSession session = request.getSession();
-		
-		boolean isLogined = false;
-		int loginedMemberId = -1;
-		
-		if(session.getAttribute("loginedMemberId") != null) {
-			isLogined = true;
-			loginedMemberId = (int)session.getAttribute("loginedMemberId");
-		}
-		
-		request.setAttribute("isLogined", isLogined);
-		request.setAttribute("loginedMemberId", loginedMemberId);
-		
-		request.getRequestDispatcher("/jsp/home/main.jsp").forward(request, response);
+
+		response.setContentType("text/html; charset=UTF-8");
+
+			request.setCharacterEncoding("UTF-8");
+
+
+			HttpSession session = request.getSession();
+			session.removeAttribute("loginedMemberId");
+			session.removeAttribute("loginedMemberLoginId");
+
+			response.getWriter().append(
+					String.format("<script>alert('로그아웃되었습니다'); location.replace('../home/main');</script>"));
 	}
+
+		
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
