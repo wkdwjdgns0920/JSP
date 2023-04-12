@@ -16,11 +16,18 @@ public class MemberDoLogoutServlet extends HttpServlet {
 			throws ServletException, IOException {
 
 		response.setContentType("text/html; charset=UTF-8");
+		
+		HttpSession session = request.getSession();
+		if(session.getAttribute("loginedMemberId") == null) {
+			response.getWriter()
+			.append(String.format("<script>alert('로그인후에 이용해주세요'); location.replace('../member/login');</script>"));
+			return;
+		}
 
 			request.setCharacterEncoding("UTF-8");
 
 
-			HttpSession session = request.getSession();
+			session = request.getSession();
 			session.removeAttribute("loginedMemberId");
 			session.removeAttribute("loginedMemberLoginId");
 

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -14,33 +15,42 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.KoreaIT.java.jam.config.Config;
-import com.KoreaIT.java.jam.exception.SQLErrorException;
+import com.KoreaIT.java.jam.controller.ArticleController;
 import com.KoreaIT.java.jam.util.DBUtil;
 import com.KoreaIT.java.jam.util.SecSql;
 
-@WebServlet("/home/main")
-public class HomeMainServlet extends HttpServlet {
-
+@WebServlet("/s/*")
+public class DispatcherServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
-		response.setContentType("text/html; charset= UTF-8");
+		response.setContentType("text/html; charset=UTF-8");
+		request.setCharacterEncoding("UTF-8");
+		
+		String requestUri = request.getRequestURI();
+		
+		String[] requestUriBits = requestUri.split("/");
+		
+		if(requestUriBits.length < 5) {
+			response.getWriter().append("올바른 요청이 아닙니다");
+			return;
+		}
+
+		// DB 연결
+		Connection conn = null;
 
 		try {
 			Class.forName(Config.getDBDriverClassName());
 		} catch (ClassNotFoundException e) {
 			System.out.println("예외 : 클래스가 없습니다");
+			System.out.println("프로그램을 종료합니다");
 			return;
 		}
 
-		Connection conn = null;
-
 		try {
 			conn = DriverManager.getConnection(Config.getDBUrl(), Config.getDBUser(), Config.getDBPassword());
-
-			request.setCharacterEncoding("UTF-8");
-
+			
 			HttpSession session = request.getSession();
 
 			boolean isLogined = false;
@@ -60,13 +70,24 @@ public class HomeMainServlet extends HttpServlet {
 			request.setAttribute("isLogined", isLogined);
 			request.setAttribute("loginedMemberId", loginedMemberId);
 			request.setAttribute("loginedMemberRow", loginedMemberRow);
-
-			request.getRequestDispatcher("/jsp/home/main.jsp").forward(request, response);
+			
+			String controllerName = requestUriBits[3];
+			String actionMethodName = requestUriBits[4];
+			
+			if(controllerName.equals("article")) {
+				ArticleController articleController = new ArticleController(request, response, conn);
+				
+				if(actionMethodName.equals("list")) {
+					articleController.showList();
+				} else if(actionMethodName.equals("write")) {
+					articleController.doWrite();
+				} else if(actionMethodName.equals("delete")) {
+					articleController.doDelete();
+				}
+			}
 
 		} catch (SQLException e) {
 			e.printStackTrace();
-		} catch (SQLErrorException e) {
-			e.getOrigin().printStackTrace();
 		} finally {
 			try {
 				if (conn != null && !conn.isClosed()) {
@@ -76,7 +97,6 @@ public class HomeMainServlet extends HttpServlet {
 				e.printStackTrace();
 			}
 		}
-
 	}
 
 	@Override

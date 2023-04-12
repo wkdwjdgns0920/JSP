@@ -11,6 +11,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import com.KoreaIT.java.jam.config.Config;
 import com.KoreaIT.java.jam.util.DBUtil;
@@ -23,6 +24,13 @@ public class ArticleModifyServlet extends HttpServlet {
 			throws ServletException, IOException {
 
 		response.setContentType("text/html; charset=UTF-8");
+		
+		HttpSession session = request.getSession();
+		if(session.getAttribute("loginedMemberId") == null) {
+			response.getWriter()
+			.append(String.format("<script>alert('로그인후에 이용해주세요'); location.replace('../member/login');</script>"));
+			return;
+		}
 
 		// DB 연결
 		Connection conn = null;
@@ -39,12 +47,24 @@ public class ArticleModifyServlet extends HttpServlet {
 			conn = DriverManager.getConnection(Config.getDBUrl(), Config.getDBUser(), Config.getDBPassword());
 
 			int id = Integer.parseInt(request.getParameter("id"));
-
+			
 			SecSql sql = SecSql.from("SELECT *");
 			sql.append("FROM article");
 			sql.append("WHERE id = ? ;", id);
-
+			
 			Map<String, Object> articleRow = DBUtil.selectRow(conn, sql);
+			
+			int loginedMemberId = (int)session.getAttribute("loginedMemberId");
+			
+			if(loginedMemberId != (int)articleRow.get("memberId")) {
+				response.getWriter()
+				.append(String.format("<script>alert('해당 게시글에 대한 권한이 없습니다'); location.replace('list');</script>"));
+				return;
+			}
+
+			sql = SecSql.from("SELECT *");
+			sql.append("FROM article");
+			sql.append("WHERE id = ? ;", id);
 
 			response.getWriter().append(articleRow.toString());
 
